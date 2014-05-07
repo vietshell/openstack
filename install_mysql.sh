@@ -18,7 +18,7 @@ echo "Start serivce mysql"
 echo "Wait.............."
 sed -i 's/bind-address/\#bind-address/g' $link_mycnf
 sed -i '/\[mysqld\]/a character-set-server = utf8' $link_mycnf
-sed -i '/\[mysqld\]/a init-connect = SET NAMES utf8' $link_mycnf
+sed -i '/\[mysqld\]/a init-connect = "SET NAMES utf8"' $link_mycnf
 sed -i '/\[mysqld\]/a collation-server = utf8_general_ci' $link_mycnf
 sed -i '/\[mysqld\]/a default-storage-engine = innodb' $link_mycnf
 sleep 5

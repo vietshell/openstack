@@ -9,7 +9,7 @@
 thumuc=`pwd`
 dbpass="1234567"
 dbip="192.168.0.134"
-controller="192.168.0.134"
+controller="192.168.0.110"
 ADMIN_PASS="123456a"
 ADMIN_EMAIL="service.vietsi@gmail.com"
 DEMO_PASS="123456a"
@@ -18,27 +18,12 @@ GLANCE_PASS="123456a"
 NOVA_PASS="123456a"
 NEUTRON_PASS="123456a"
 ADMIN_TOKEN="1234567a"
-
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
 #Install
-echo "Install MySQL Client - MySQL For Python"
-sleep 2
-yum -y install mysql MySQL-python wget mlocate
-
-
-
-GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' \
-IDENTIFIED BY '1234567';
-GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' \
-IDENTIFIED BY '1234567';
-
-clear
-echo "Install Openstack Packet"
-sleep 3
-wget http://repos.fedorapeople.org/repos/openstack/openstack-icehouse/rdo-release-icehouse-3.noarch.rpm
-wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-yum -y install rdo-release-icehouse-3.noarch.rpm epel-release-6-8.noarch.rpm
-yum -y install openstack-utils
-yum -y upgrade
+#echo "Install MySQL Client - MySQL For Python"
+#sleep 2
+#yum -y install mysql MySQL-python wget mlocate
 
 clear
 echo "Install Message Server: qpid"
