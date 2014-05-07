@@ -18,6 +18,13 @@ GLANCE_PASS="123456a"
 NOVA_PASS="123456a"
 NEUTRON_PASS="123456a"
 ADMIN_TOKEN="1234567a"
+METADATA_SECRET="1234567"
+FLOATING_IP_START="172.16.6.1"
+FLOATING_IP_END="172.16.6.252"
+EXTERNAL_NETWORK_GATEWAY="172.16.6.254"
+EXTERNAL_NETWORK_CIDR="172.16.6.0/24"
+TENANT_NETWORK_GATEWAY="192.168.1.254"
+TENANT_NETWORK_CIDR="192.168.1.0/24"
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 #Install
@@ -218,6 +225,11 @@ openstack-config --set /etc/neutron/neutron.conf DEFAULT nova_admin_auth_url htt
 openstack-config --set /etc/neutron/neutron.conf DEFAULT core_plugin ml2
 openstack-config --set /etc/neutron/neutron.conf DEFAULT service_plugins router
 
+#Meta secrect
+openstack-config --set /etc/nova/nova.conf DEFAULT service_neutron_metadata_proxy true
+openstack-config --set /etc/nova/nova.conf DEFAULT neutron_metadata_proxy_shared_secret $METADATA_SECRET
+
+/etc/init.d/openstack-nova-api restart
 #To configure the Modular Layer 2 (ML2) plug-in
 
 openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 type_drivers gre
@@ -227,7 +239,7 @@ openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2_type_gre tunnel
 openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini securitygroup enable_security_group True
 
-#To configure Compute to use Networking
+#To configure Compute
 openstack-config --set /etc/nova/nova.conf DEFAULT network_api_class nova.network.neutronv2.api.API
 openstack-config --set /etc/nova/nova.conf DEFAULT neutron_url http://$controller:9696
 openstack-config --set /etc/nova/nova.conf DEFAULT neutron_auth_strategy keystone
