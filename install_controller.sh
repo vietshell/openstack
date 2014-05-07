@@ -8,7 +8,7 @@
 #setting system
 thumuc=`pwd`
 dbpass="1234567"
-dbip="192.168.0.134"
+dbip="192.168.0.135"
 controller="192.168.0.110"
 ADMIN_PASS="123456a"
 ADMIN_EMAIL="service.vietsi@gmail.com"
@@ -48,7 +48,7 @@ su -s /bin/sh -c "keystone-manage db_sync" keystone
 
 #setup admintoken
 
-penstack-config --set /etc/keystone/keystone.conf DEFAULT admin_token $ADMIN_TOKEN
+openstack-config --set /etc/keystone/keystone.conf DEFAULT admin_token $ADMIN_TOKEN
 keystone-manage pki_setup --keystone-user keystone --keystone-group keystone
 chown -R keystone:keystone /etc/keystone/ssl
 chmod -R o-rwx /etc/keystone/ssl
