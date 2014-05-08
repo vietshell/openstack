@@ -6,7 +6,25 @@
 #  Created by HSP SI Viet Nam on 5/7/14.
 #
 
-
+thumuc=`pwd`
+dbpass="1234567"
+dbip="192.168.0.135"
+controller="192.168.0.110"
+ADMIN_PASS="123456a"
+ADMIN_EMAIL="service.vietsi@gmail.com"
+DEMO_PASS="123456a"
+DEMO_EMAIL="namnt2202@gmail.com"
+GLANCE_PASS="123456a"
+NOVA_PASS="123456a"
+NEUTRON_PASS="123456a"
+ADMIN_TOKEN="1234567a"
+METADATA_SECRET="1234567"
+FLOATING_IP_START="172.16.6.1"
+FLOATING_IP_END="172.16.6.252"
+EXTERNAL_NETWORK_GATEWAY="172.16.6.254"
+EXTERNAL_NETWORK_CIDR="172.16.6.0/24"
+TENANT_NETWORK_GATEWAY="192.168.1.254"
+TENANT_NETWORK_CIDR="192.168.1.0/24"
 echo "Install MySQL Server"
 echo "Please, wait...."
 yum -y install mysql-server mlocate

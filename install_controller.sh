@@ -11,6 +11,7 @@ dbpass="1234567"
 dbip="192.168.0.135"
 controller="192.168.0.110"
 ADMIN_PASS="123456a"
+PASSWORD="123456a"
 ADMIN_EMAIL="service.vietsi@gmail.com"
 DEMO_PASS="123456a"
 DEMO_EMAIL="namnt2202@gmail.com"
@@ -19,6 +20,12 @@ NOVA_PASS="123456a"
 NEUTRON_PASS="123456a"
 ADMIN_TOKEN="1234567a"
 METADATA_SECRET="1234567"
+FLOATING_IP_START="172.16.6.1"
+FLOATING_IP_END="172.16.6.252"
+EXTERNAL_NETWORK_GATEWAY="172.16.6.254"
+EXTERNAL_NETWORK_CIDR="172.16.6.0/24"
+TENANT_NETWORK_GATEWAY="192.168.1.254"
+TENANT_NETWORK_CIDR="192.168.1.0/24"
 FLOATING_IP_START="172.16.6.1"
 FLOATING_IP_END="172.16.6.252"
 EXTERNAL_NETWORK_GATEWAY="172.16.6.254"
@@ -99,6 +106,15 @@ export OS_PASSWORD=$ADMIN_PASS
 export OS_TENANT_NAME=admin
 export OS_AUTH_URL=http://$controller:35357/v2.0
 eof
+
+
+cat > $thumuc/demo-openrc.sh << eof
+export OS_USERNAME=demo
+export OS_PASSWORD=$DEMO_PASS
+export OS_TENANT_NAME=demo
+export OS_AUTH_URL=http://$controller:35357/v2.0
+eof
+
 chmod +x $thumuc/admin-openrc.sh
 source $thumuc/admin-openrc.sh
 keystone token-get
@@ -107,11 +123,12 @@ sleep 3
 keystone user-role-list --user admin --tenant admin
 sleep 3
 
-
+keystone --os-password $PASSWORD service-list
 #Install glance
+yum -y install python-pip
 yum -y install openstack-glance python-glanceclient
 openstack-config --set /etc/glance/glance-api.conf database connection mysql://glance:$dbpass@$dbip/glance
-openstack-config --set /etc/glance/glance-registry.conf database connection mysql://$dbpass@$dbip/glance
+openstack-config --set /etc/glance/glance-registry.conf database connection mysql://glance:$dbpass@$dbip/glance
 openstack-config --set /etc/glance/glance-api.conf DEFAULT rpc_backend qpid
 openstack-config --set /etc/glance/glance-api.conf DEFAULT qpid_hostname $controller
 
@@ -139,17 +156,21 @@ keystone service-create --name=glance --type=image --description="OpenStack Imag
 keystone endpoint-create --service-id=$(keystone service-list | awk '/ image / {print $2}') --publicurl=http://$controller:9292 --internalurl=http://$controller:9292 --adminurl=http://$controller:9292
 
 #start service glance
-for sv_glance in $( ls /etc/init.d | grep openstack-glance );
-do /etc/init.d/$sv_glance restart
-chkconfig $sv_glance on;
-done
+/etc/init.d/openstack-glance-api start
+/etc/init.d/openstack-glance-registry start
+chkconfig openstack-glance-api on
+chkconfig openstack-glance-registry on
 
 #create images
 source $thumuc/admin-openrc.sh
 mkdir $thumuc/images
 cd $thumuc/images/
 wget http://cdn.download.cirros-cloud.net/0.3.2/cirros-0.3.2-x86_64-disk.img
+clear
+echo "Create Images ............."
 glance image-create --name "cirros-0.3.2-x86_64" --disk-format qcow2 --container-format bare --is-public True --progress < $thumuc/images/cirros-0.3.2-x86_64-disk.img
+sleep 20
+cd ..
 
 #Install Compute controller services
 yum -y install openstack-nova-api openstack-nova-cert openstack-nova-conductor \
@@ -183,7 +204,7 @@ keystone endpoint-create --service-id=$(keystone service-list | awk '/ compute /
 
 #start service glance
 for sv_nova in $( ls /etc/init.d | grep openstack-nova );
-do /etc/init.d/$sv_glance restart
+do /etc/init.d/$sv_nova restart
 chkconfig $sv_nova on;
 done
 
@@ -270,8 +291,26 @@ echo "net.ipv4.conf.all.rp_filter=0" >> /etc/sysctl.conf
 echo "net.ipv4.conf.default.rp_filter=0" >> /etc/sysctl.conf
 sysctl -p
 
+
+source admin-openrc.sh
+
+neutron net-create ext-net --shared --router:external=True
+neutron subnet-create ext-net --name ext-subnet --allocation-pool start=$FLOATING_IP_START,end=$FLOATING_IP_END --disable-dhcp --gateway $EXTERNAL_NETWORK_GATEWAY $EXTERNAL_NETWORK_CIDR
+source demo-openrc.sh
+neutron net-create demo-net
+neutron subnet-create demo-net --name demo-subnet --gateway $TENANT_NETWORK_GATEWAY $TENANT_NETWORK_CIDR
+
+neutron router-create demo-router
+neutron router-interface-add demo-router demo-subnet
+neutron router-gateway-set demo-router ext-net
+
 #Configure Dashboard
 yum -y install memcached python-memcached mod_wsgi openstack-dashboard
+
+sed -i 's/ALLOWED_HOSTS/\#ALLOWED_HOSTS/g' /etc/openstack-dashboard/local_settings
+echo "ALLOWED_HOSTS = ['horizon.example.com', 'localhost', '*']" >> /etc/openstack-dashboard/local_settings
+
+
 /etc/init.d/httpd start
 chkconfig httpd on
 
