@@ -8,7 +8,7 @@
 clear
 thumuc=`pwd`
 dbpass="1234567"
-dbip="192.168.0.135"
+dbip="192.168.0.110"
 controller="192.168.0.110"
 novaip="192.168.0.220"
 ADMIN_PASS="123456a"

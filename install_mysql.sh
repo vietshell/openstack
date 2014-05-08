@@ -8,7 +8,7 @@
 
 thumuc=`pwd`
 dbpass="1234567"
-dbip="192.168.0.135"
+dbip="192.168.0.110"
 controller="192.168.0.110"
 ADMIN_PASS="123456a"
 ADMIN_EMAIL="service.vietsi@gmail.com"

@@ -8,7 +8,7 @@
 #setting system
 thumuc=`pwd`
 dbpass="1234567"
-dbip="192.168.0.135"
+dbip="192.168.0.110"
 controller="192.168.0.110"
 ADMIN_PASS="123456a"
 PASSWORD="123456a"
@@ -203,14 +203,29 @@ keystone service-create --name=nova --type=compute --description="OpenStack Comp
 keystone endpoint-create --service-id=$(keystone service-list | awk '/ compute / {print $2}') --publicurl=http://$controller:8774/v2/%\(tenant_id\)s --internalurl=http://$controller:8774/v2/%\(tenant_id\)s --adminurl=http://$controller:8774/v2/%\(tenant_id\)s
 
 #start service glance
-for sv_nova in $( ls /etc/init.d | grep openstack-nova );
-do /etc/init.d/$sv_nova restart
-chkconfig $sv_nova on;
-done
+/etc/init.d/openstack-nova-api start
+/etc/init.d/openstack-nova-cert start
+/etc/init.d/openstack-nova-consoleauth start
+/etc/init.d/openstack-nova-scheduler start
+/etc/init.d/openstack-nova-conductor start
+/etc/init.d/openstack-nova-novncproxy start
+chkconfig openstack-nova-api on
+chkconfig openstack-nova-cert on
+chkconfig openstack-nova-consoleauth on
+chkconfig openstack-nova-scheduler on
+chkconfig openstack-nova-conductor on
+chkconfig openstack-nova-novncproxy on
+# for sv_nova in $( ls /etc/init.d | grep openstack-nova );
+# do /etc/init.d/$sv_nova restart
+# chkconfig $sv_nova on;
+# done
 
 clear
+
+echo "Nova Image List"
+source admin-openrc.sh
 nova image-list
-sleep 3
+sleep 20
 
 
 #Networking
@@ -279,7 +294,7 @@ ln -s plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
 /etc/init.d/openstack-nova-api restart
 /etc/init.d/openstack-nova-scheduler restart
 /etc/init.d/openstack-nova-conductor restart
-service neutron-server start
+/etc/init.d/neutron-server restart
 chkconfig neutron-server on
 
 #configure sysctl
@@ -292,11 +307,12 @@ echo "net.ipv4.conf.default.rp_filter=0" >> /etc/sysctl.conf
 sysctl -p
 
 
-source admin-openrc.sh
+source $thumuc/admin-openrc.sh
 
 neutron net-create ext-net --shared --router:external=True
 neutron subnet-create ext-net --name ext-subnet --allocation-pool start=$FLOATING_IP_START,end=$FLOATING_IP_END --disable-dhcp --gateway $EXTERNAL_NETWORK_GATEWAY $EXTERNAL_NETWORK_CIDR
-source demo-openrc.sh
+
+source $thumuc/demo-openrc.sh
 neutron net-create demo-net
 neutron subnet-create demo-net --name demo-subnet --gateway $TENANT_NETWORK_GATEWAY $TENANT_NETWORK_CIDR
 

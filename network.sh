@@ -9,7 +9,7 @@
 #import conifugre
 thumuc=`pwd`
 dbpass="1234567"
-dbip="192.168.0.135"
+dbip="192.168.0.110"
 controller="192.168.0.110"
 novaip="192.168.0.220"
 ADMIN_PASS="123456a"
@@ -107,6 +107,9 @@ ln -s plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
 cp /etc/init.d/neutron-openvswitch-agent /etc/init.d/neutron-openvswitch-agent.orig
 sed -i 's,plugins/openvswitch/ovs_neutron_plugin.ini,plugin.ini,g' /etc/init.d/neutron-openvswitch-agent
 for sv_ntr in $( ls /etc/init.d | grep neutron );
-do /etc/init.d/$sv_ntr restart
-chkconfig $sv_ntr on;
+do /etc/init.d/$sv_ntr stop
+chkconfig $sv_ntr off;
 done
+
+clear
+echo "Xong"
